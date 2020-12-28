@@ -1,8 +1,36 @@
-Benevis("Hello World
-dfgr \" )^
-Benevis("%d",sp) ^
+Benevis("Hello World" )^
 Sahih sp^
+Sahih x^
 Begir("%d",sp)^
+Benevis("sp = ") ^
 Benevis("%d",sp) ^
-Begir("%d",sp)^ 
-Benevis("%d",sp) ^
+Begir("%d",x)^ 
+Benevis("x = ") ^
+Benevis("%d",x) ^
+agar{sp &B x}
+[
+	Benevis("B" )^
+	Sahih v^
+	Begir("%d",v)^
+	agar{sp &B v}
+	[
+		Benevis("B" )^
+	]
+]
+agar{sp &BM x}
+[
+	Benevis("BM" )^
+]
+agar{sp &MM x}
+[
+	Benevis("MM" )^
+]
+agar{sp &KM x}
+[
+	Benevis("KM" )^
+	[[[[[
+]
+agar{sp &K x}]
+[
+	Benevis("K" )^
+]

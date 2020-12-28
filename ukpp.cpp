@@ -17,14 +17,20 @@ using namespace std;
 #define FINISH 10
 #define STRING 11
 #define CHAR 12
-#define EQ 13			//  =
-#define FL 14			//  ^
-#define PO 15			//  (
-#define PC 16			//  )
-#define DD 17			//  "
-#define OD 18			//  '
-#define PE 19			//  %
-#define AN 20			//  ,
+#define IFSYMB 13
+#define IFVAR 14
+#define EQ 15			//  =
+#define FL 16			//  ^
+#define PO 17			//  (
+#define PC 18			//  )
+#define DD 19			//  "
+#define OD 20			//  '
+#define PE 21			//  %
+#define AN 22			//  ,
+#define AO 23			//  {
+#define AC 24			//  }
+#define FO 25			//  [
+#define FC 26			//  ]
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 // all var we have
 
@@ -35,7 +41,7 @@ class vari
 	int nvar=0;
 	double vvar;
 	vari *next;
-}firstv,*lastv,*nextv;
+}firstv,*lastv,*nextv,check1,check2;
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 //Open code
@@ -46,7 +52,7 @@ char code[100]="D:\\unknownpp\\code.dat";
 //global var
 
 char ch,tok,toksym,tokerr;
-int varcode=0;
+int varcode=0,ifcode=0,fcode=0;
 string token; 
 ifstream fpc;
 bool bsym=0,berr=0;
@@ -55,12 +61,14 @@ bool bsym=0,berr=0;
 bool iswhite(char c);
 bool isnvar();
 bool isvar();
+bool isif();
 bool issymb(char s);
 char getToken(bool w);
 void makevar();
 void valuevar();
 int getvalue();
 int putout();
+int runif();
 void lvl1();
 void error(int e);
 int main()
@@ -96,7 +104,7 @@ int main()
 			 break;
 			case GET:error(getvalue()); cout<<" get";
 			 break;
-			case IF: cout<<" if";
+			case IF:error(runif()); cout<<" if";
 			 break;
 			case WHILE:
 				cout<<" while"; 
@@ -136,7 +144,37 @@ bool isnvar()
 	else 
 		return 0;
 }
-
+//NEW
+bool isif()
+{
+	if(token=="&B")
+	{
+		ifcode=1;
+		return 1;
+	}
+	else if(token=="&BM")
+	{
+		ifcode=2;
+		return 1;
+	}
+	else if(token=="&MM")
+	{
+		ifcode=3;
+		return 1;
+	}
+	else if(token=="&KM")
+	{
+		ifcode=4;
+		return 1;
+	}
+	else if(token=="&K")
+	{
+		ifcode=5;
+		return 1;
+	}
+	else 
+		return 0;
+}
 
 bool isvar()
 {
@@ -171,6 +209,20 @@ bool issymb(char s)
 		toksym=FL;
 	else if(s=='=')
 		toksym=EQ;
+	else if(s=='[')
+	{
+		toksym=FO;
+		fcode++;
+	}
+	else if(s==']')
+	{
+		toksym=FC;
+		fcode--;
+	}
+	else if(s=='{')
+		toksym=AO;
+	else if(s=='}')
+		toksym=AC;
 	else
 		return 0;
 	return 1;
@@ -216,14 +268,18 @@ char getToken(bool w)
 			break;
 		token+=ch;
 	}
+	
 	if(token=="agar")
 		return IF;
 	if(token=="ta")
 		return WHILE;
+	
 	if(token=="Benevis")
 		return PRINT;
 	if(token=="Begir")
 		return GET;
+	if(isif())
+		return IFSYMB;
 	if(isnvar())
 		return NEWVAR;
 	if(isvar())
@@ -566,45 +622,250 @@ int putout()
 		return 8;
 	return 0;
 }
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+int runif()
+{
+	int scode=fcode;
+	tok=getToken(0);
+	if(tok==AO)
+	{
+		
+		tok=getToken(0);
+		if(tok==VAR)
+		{
+			check1.vvar=nextv->vvar;
+			tok=IFVAR;
+		}
+		else if(tok==DELIM)
+		{
+			tok=IFVAR;
+		}
+		if(tok==IFVAR)
+		{
+			tok=getToken(0);
+			if(tok==IFSYMB)
+			{
+				tok=getToken(0);
+				if(tok==VAR)
+				{
+					check2.vvar=nextv->vvar;
+					tok=IFVAR;
+				}
+				else if(tok==DELIM)
+				{
+					tok=IFVAR;
+				}
+				if(tok==IFVAR)
+				{
+					tok=getToken(0);
+					if(tok==AC)
+					{
+						if(ifcode==1)
+						{	
+							tok=getToken(0);
+							if(tok==FO)
+							{
+								cout<<"************"<<check1.vvar<<"   "<<check2.vvar<<endl;	
+								if(!(check1.vvar>check2.vvar))
+								{
+									cout<<"gooooooz";
+									scode=fcode;
+									tok=getToken(0);
+									while(fcode>scode)
+									{
+										if(fpc.eof())
+											return 13;
+										tok=getToken(0);
+									}
+									return 0;
+								}
+								else if(fcode==scode+1)
+								{
+									return 0;
+								}
+								return 13;
+							}
+							else
+								return 13;
+						}
+						else if(ifcode==2)
+						{	
+							tok=getToken(0);
+							if(tok==FO)
+							{
+								if(!(check1.vvar>=check2.vvar))
+								{
+									scode=fcode;
+									tok=getToken(0);
+									while(fcode>scode)
+									{
+										if(fpc.eof())
+											return 13;
+										tok=getToken(0);
+									}
+									return 0;
+								}
+								else if(fcode==scode+1)
+								{
+									return 0;
+								}
+								return 13;
+							}
+							else
+								return 13;
+						}
+						else if(ifcode==3)
+						{
+							tok=getToken(0);
+							if(tok==FO)
+							{
+								if(!(check1.vvar==check2.vvar))
+								{
+									scode=fcode;
+									tok=getToken(0);
+									while(fcode>scode)
+									{
+										if(fpc.eof())
+											return 13;
+										tok=getToken(0);
+									}
+									return 0;
+								}
+								else if(fcode==scode+1)
+								{
+									return 0;
+								}
+								return 13;
+							}
+							else
+								return 13;
+						}
+						else if(ifcode==4)
+						{
+							tok=getToken(0);
+							if(tok==FO)
+							{
+								if(!(check1.vvar<=check2.vvar))
+								{
+									scode=fcode;
+									tok=getToken(0);
+									while(fcode>scode)
+									{
+										if(fpc.eof())
+											return 13;
+										tok=getToken(0);
+									}
+									return 0;
+								}
+								else if(fcode==scode+1)
+								{
+									return 0;
+								}
+								return 13;
+							}
+							else
+								return 13;
+						}
+						else if(ifcode==5)
+						{
+							tok=getToken(0);
+							if(tok==FO)
+							{
+								if(!(check1.vvar<check2.vvar))
+								{
+									scode=fcode;
+									tok=getToken(0);
+									while(fcode>scode)
+									{
+										if(fpc.eof())
+											return 13;
+										tok=getToken(0);
+									}
+									return 0;
+								}
+								else if(fcode==scode+1)
+								{
+									return 0;
+								}
+								return 13;
+							}
+							else
+								return 13;
+						}
+					}
+					else 
+						return 15;
+				}
+				else
+					return 16;
+			}
+			else
+				return 17;
+		}
+		else
+			return 16;	
+	}
+	else
+		return 14;	
+			
+}
+//----------------------------------------------------------------------------------------------------------------------------------------
 void error(int e)
 {
 	switch(e)
 	{
 		case 1:
-			cout<<endl<<" -/-/-/-/-/-/-/- we dont find (^) -\\-\\-\\-\\-\\-\\-\\- ";berr=1;
+			cout<<endl<<" -/-/-/-/-/-/-/- we dont find (^) -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
 		 break;
 		case 2:
-			cout<<endl<<" -/-/-/-/-/-/-/- we dont find ()) -\\-\\-\\-\\-\\-\\-\\- ";berr=1;
+			cout<<endl<<" -/-/-/-/-/-/-/- we dont find ()) -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
 		 break;
 		case 3:
-			cout<<endl<<" -/-/-/-/-/-/-/- we dont find (name of var) -\\-\\-\\-\\-\\-\\-\\- ";berr=1;
+			cout<<endl<<" -/-/-/-/-/-/-/- we dont find (name of var) -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
 		 break;
 		case 4:
-			cout<<endl<<" -/-/-/-/-/-/-/- we dont find (,) -\\-\\-\\-\\-\\-\\-\\- ";berr=1;
+			cout<<endl<<" -/-/-/-/-/-/-/- we dont find (,) -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
 		 break;
 		case 5:
-			cout<<endl<<" -/-/-/-/-/-/-/- we dont find (\") -\\-\\-\\-\\-\\-\\-\\- ";berr=1;
+			cout<<endl<<" -/-/-/-/-/-/-/- we dont find (\") -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
 		 break;
 		case 6:
-			cout<<endl<<" -/-/-/-/-/-/-/- we dont find (type of var) -\\-\\-\\-\\-\\-\\-\\- ";berr=1;
+			cout<<endl<<" -/-/-/-/-/-/-/- we dont find (type of var) -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
 		 break;
 		case 7:
-			cout<<endl<<" -/-/-/-/-/-/-/- we dont find (\%) -\\-\\-\\-\\-\\-\\-\\- ";berr=1;
+			cout<<endl<<" -/-/-/-/-/-/-/- we dont find (\%) -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
 		 break;
 		case 8:
-			cout<<endl<<" -/-/-/-/-/-/-/- we dont find (() -\\-\\-\\-\\-\\-\\-\\- ";berr=1;
+			cout<<endl<<" -/-/-/-/-/-/-/- we dont find (() -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
 		 break;
 		case 9:
-			cout<<endl<<" -/-/-/-/-/-/-/- this var is not sahih -\\-\\-\\-\\-\\-\\-\\- ";berr=1;
+			cout<<endl<<" -/-/-/-/-/-/-/- this var is not sahih -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
 		 break;
 		case 10:
-			cout<<endl<<" -/-/-/-/-/-/-/- this var is not ashari -\\-\\-\\-\\-\\-\\-\\- ";berr=1;
+			cout<<endl<<" -/-/-/-/-/-/-/- this var is not ashari -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
 		 break;
 		case 11:
-			cout<<endl<<" -/-/-/-/-/-/-/- this var is not char -\\-\\-\\-\\-\\-\\-\\- ";berr=1;
+			cout<<endl<<" -/-/-/-/-/-/-/- this var is not char -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
 		 break;
 		case 12:
-			cout<<endl<<" -/-/-/-/-/-/-/- you made this var later -\\-\\-\\-\\-\\-\\-\\- ";berr=1;
+			cout<<endl<<" -/-/-/-/-/-/-/- you made this var later -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
+			break;
+		case 13:
+			cout<<endl<<" -/-/-/-/-/-/-/- we have problem with your (]) or ([) number -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
+		 break;
+		 case 14:
+			cout<<endl<<" -/-/-/-/-/-/-/- we dont find ({) -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
+		 break;
+		 case 15:
+			cout<<endl<<" -/-/-/-/-/-/-/- we dont find (}) -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
+		 break;
+		 case 16:
+			cout<<endl<<" -/-/-/-/-/-/-/- we dont find any type of var or delim -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
+		 break;
+		 case 17:
+			cout<<endl<<" -/-/-/-/-/-/-/- we dont find type of your condition -\\-\\-\\-\\-\\-\\-\\- ";berr=1;exit(0);
 		 break;
 	}
+	
 }
+
