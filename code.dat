@@ -1,36 +1,25 @@
 Benevis("Hello World" )^
 Sahih sp^
 Sahih x^
+Sahih t^
 Begir("%d",sp)^
 Benevis("sp = ") ^
 Benevis("%d",sp) ^
 Begir("%d",x)^ 
 Benevis("x = ") ^
 Benevis("%d",x) ^
-agar{sp &B x}
+ta{sp &B x}
 [
 	Benevis("B" )^
-	Sahih v^
-	Begir("%d",v)^
-	agar{sp &B v}
-	[
-		Benevis("B" )^
-	]
+	Begir("%d",x)^
 ]
-agar{sp &BM x}
+Begir("%d",x)^
+agar{sp &B x}
 [
-	Benevis("BM" )^
+	Benevis("gooz" )^
 ]
-agar{sp &MM x}
-[
-	Benevis("MM" )^
-]
-agar{sp &KM x}
-[
-	Benevis("KM" )^
-	[[[[[
-]
-agar{sp &K x}]
+ta{sp &B x}
 [
 	Benevis("K" )^
+	Begir("%d",x)^
 ]

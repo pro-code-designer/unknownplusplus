@@ -46,16 +46,17 @@ class vari
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 //Open code
 
-char code[100]="D:\\unknownpp\\code.dat";
+char code[1000]="D:\\unknownpp\\code.dat",t[100];
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 //global var
 
 char ch,tok,toksym,tokerr;
-int varcode=0,ifcode=0,fcode=0;
+int varcode=0,ifcode=0,fcode=0,tellg,tellx=0,tells;
 string token; 
 ifstream fpc;
-bool bsym=0,berr=0;
+bool bsym=0,berr=0,bwhile=0;
+
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 bool iswhite(char c);
@@ -69,13 +70,29 @@ void valuevar();
 int getvalue();
 int putout();
 int runif();
+void runwhile();
 void lvl1();
 void error(int e);
+void program();
 int main()
 {
 	lastv=&firstv;
 	fpc.open(code);
 	while(!fpc.eof())
+	{	
+		fpc.getline(t,100);
+		tellx++;
+	}
+	fpc.close();
+	fpc.open(code);
+	program();
+	if(!fpc.eof())
+	error(13);
+}
+void program()
+{
+	bool bpro=1;
+	while(!fpc.eof()&&bpro)
 	{
 
 		tok=getToken(0);
@@ -106,11 +123,13 @@ int main()
 			 break;
 			case IF:error(runif()); cout<<" if";
 			 break;
-			case WHILE:
-				cout<<" while"; 
+			case WHILE: cout<<" while "<<tellx; tellg=fpc.tellg()-tellx;bwhile=1;runwhile();
 			 break;
-			case ERROR: cout<<"ridi"<<endl; break;
+			case FC: bpro=0; 
+			 break;
 			case FINISH: exit(0); 
+			 break;
+			default :error(18);
 			 break;
 		}
 			cout<<endl;
@@ -118,8 +137,13 @@ int main()
 }
 bool iswhite(char c)
 {
-	if(c=='\0'||c=='\n'||c=='\t'||c==' ')
+	if(c=='\0'||c=='\t'||c==' ')
 	{
+		return 1;
+	}
+	else if(c=='\n')
+	{
+		tellx--;
 		return 1;
 	}
 	return 0;
@@ -668,8 +692,8 @@ int runif()
 								cout<<"************"<<check1.vvar<<"   "<<check2.vvar<<endl;	
 								if(!(check1.vvar>check2.vvar))
 								{
-									cout<<"gooooooz";
-									scode=fcode;
+									bwhile=0;
+									scode=fcode-1;
 									tok=getToken(0);
 									while(fcode>scode)
 									{
@@ -681,6 +705,7 @@ int runif()
 								}
 								else if(fcode==scode+1)
 								{
+									program();
 									return 0;
 								}
 								return 13;
@@ -695,7 +720,8 @@ int runif()
 							{
 								if(!(check1.vvar>=check2.vvar))
 								{
-									scode=fcode;
+									bwhile=0;
+									scode=fcode-1;
 									tok=getToken(0);
 									while(fcode>scode)
 									{
@@ -707,6 +733,7 @@ int runif()
 								}
 								else if(fcode==scode+1)
 								{
+									program();
 									return 0;
 								}
 								return 13;
@@ -721,7 +748,8 @@ int runif()
 							{
 								if(!(check1.vvar==check2.vvar))
 								{
-									scode=fcode;
+									bwhile=0;
+									scode=fcode-1;
 									tok=getToken(0);
 									while(fcode>scode)
 									{
@@ -733,6 +761,7 @@ int runif()
 								}
 								else if(fcode==scode+1)
 								{
+									program();
 									return 0;
 								}
 								return 13;
@@ -747,7 +776,8 @@ int runif()
 							{
 								if(!(check1.vvar<=check2.vvar))
 								{
-									scode=fcode;
+									bwhile=0;
+									scode=fcode-1;
 									tok=getToken(0);
 									while(fcode>scode)
 									{
@@ -759,6 +789,7 @@ int runif()
 								}
 								else if(fcode==scode+1)
 								{
+									program();
 									return 0;
 								}
 								return 13;
@@ -773,6 +804,7 @@ int runif()
 							{
 								if(!(check1.vvar<check2.vvar))
 								{
+									bwhile=0;
 									scode=fcode;
 									tok=getToken(0);
 									while(fcode>scode)
@@ -808,6 +840,21 @@ int runif()
 	else
 		return 14;	
 			
+}
+//----------------------------------------------------------------------------------------------------------------------------------------
+void runwhile()
+{
+	tells=tellx;
+	error(runif());
+	if(bwhile)
+	{
+		fpc.seekg(tellg);
+	//	tok=getToken(0);
+	//	cout<<"----------h-gbsgs------"<<token<<endl;
+	//	exit(0);
+	tellx=tells;
+		runwhile();
+	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
 void error(int e)
@@ -868,4 +915,5 @@ void error(int e)
 	}
 	
 }
+
 
